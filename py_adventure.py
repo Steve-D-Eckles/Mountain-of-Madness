@@ -42,11 +42,13 @@ def choose():
         return ''
     elif choice == 'gold':
         print(f"You are currently carrying {stats['gold']} gold.")
+        return ''
     elif choice == 'items':
         if len(stats['items']) > 0:
-            print(f"Your inventory currently contains a {', '.join(stats['items'][:-1])}, and a {stats['items'][-1]}")
+            print(f"Your inventory currently contains a {', '.join(stats['items'][:-1])}, and {stats['items'][-1]}")
         else:
             print(f"Your inventory is empty.")
+        return ''
     else:
         return choice
 
@@ -86,9 +88,9 @@ def combat(enemy, count, e_skill, e_stamina, stats):
 def cave(cave_response, stats):
     while cave_response == '' or not cave_response in ['approach', 'search', 'wait']:
         print("""Choose one:
-        -APPROACH the cave
-        -SEARCH for another entrance
-        -WAIT until nightfall""")
+    -APPROACH the cave
+    -SEARCH for another entrance
+    -WAIT until nightfall""")
         cave_response = choose()
 
     if cave_response == 'approach':
@@ -97,8 +99,15 @@ emerge from the darkness. They are chittering in a language that you do not unde
 but you have seen enough combat to understand the cruel gleam in their eyes.
 You must FIGHT!\n\nPress ENTER to begin the combat.""")
         choose()
-        combat('GOBLIN GUARD', 2, 5, 4)
-        print("Victory over the GOBLIN GUARDS is yours!")
+        combat('GOBLIN GUARD', 2, 5, 4, stats)
+        print("""Victory over the GOBLIN GUARDS is yours! You take a moment to
+examine their belongings. Their arms and armor are crude and worthless, but you
+find 1 GOLD and a COPPER KEY. You decide that you have found everything of value
+that these lowly guards have to offer and head deeper into the cave.\n
+Press ENTER to continue.""")
+        stats['gold'] += 1
+        stats['items'].append('a copper key')
+        choose()
         first_fork(stats)
 
     elif cave_response == 'search':
@@ -133,7 +142,7 @@ the cave entrance that you saw yesterday. You cautiously approach the low, wide 
 As you draw closer to the threshold, you see crude wooden chairs around a small table
 indicating that this area is typically occupied. You are relieved to find no guards
 in the immediate area; you surmise that they must be out on patrol and decide to continue
-deeper into the cave.
+deeper into the cave.\n
 Press ENTER to ready yourself and proceed...""")
             choose()
             first_fork(stats)
@@ -145,31 +154,82 @@ prevented you from feeling the sword enter your back. Your adventure is over."""
             input("Press ENTER to quit.\n> ")
 
 def first_fork(stats):
-    print("""You find that """)
+    print("""The light lessens as you descend a steady slope deeper into the cave.
+You see a fork in the tunnel ahead, but your limited dark vision does not allow you
+to see far down either path ahead of you. Will you:
+    -Take the path on the LEFT
+    -Take the path on the RIGHT""")
 
-print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-print("\nType 'help' during any normal prompt to see help messages.\n")
-print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-print(f"""You are {player_name}, an adventurer of little renown. You have traveled far to the
+    fork_response = choose()
+    while fork_response == '' or not fork_response in ['left', 'right']:
+        print("""Pick one:
+    -Take the path on the LEFT
+    -Take the path on the RIGHT""")
+        fork_response = choose()
+
+    if fork_response == 'left':
+        print("Hold on a minute")
+        left_tine(stats)
+
+    if fork_response == 'right':
+        print("""You head down the tunnel to the right. After only a few moments
+of walking, you come upon a closed wooden door. The door is locked, but you could
+try to ram it down with your shoulder. Would you like to:
+    -RAM the door
+    -Turn BACK""")
+        door_response = choose()
+        while door_response == '' or not door_response in ['ram', 'back']:
+            print("""Choose one:
+    -RAM the door
+    -Turn BACK""")
+            door_response = choose()
+
+        if door_response == 'ram':
+            print("""You stretch out your shoulder and ready yourself to charge the
+unsuspecting door. You must Test Your Luck. For each failure, you will take 2 points
+of STAMINA damage. You may try as many times as you like, or you may turn BACK at
+any time.\n\nPress ENTER to TEST YOUR LUCK""")
+            while True:
+                ram_response = choose()
+                if ram_response == 'back':
+                    left_tine(stats)
+                luck_test = random.randint(2, 12)
+                print(f"You rolled {luck_test}, your LUCK is {stats['luck']}")
+                if luck_test > stats['luck']:
+                    stats['stamina'] -= 2
+                    print("You are unlucky and unable to break open the door. Try again or go BACK")
+                    continue
+                else: break
+
+            stats['luck'] -= 1
+            print("""You are lucky.""")
+
+def game_start():
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print("\nType 'help' during any normal prompt to see help messages.\n")
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print(f"""You are {player_name}, an adventurer of little renown. You have traveled far to the
 south of your homeland in search of treasure and glory. After many days of traveling
 through flat, boring plains; dank, dreadful bogs; and dense, dark forests, you
 at last arrive at your destination: the fabled Mountain of Madness.\n
 Inside is said to dwell a powerful sorcerer and his ragtag band of minions and
 deadly beasts. You ready your sword and steel yourself for the trials ahead.\n""")
 
-print(f"Your SKILL is {stats['skill']}. Your STAMINA is {stats['stamina']}. Your LUCK is {stats['luck']}.")
-print("Type 'stats' during any normal prompt to see your stats.\n")
-print("Press ENTER to begin your adventure!")
-choose()
+    print(f"Your SKILL is {stats['skill']}. Your STAMINA is {stats['stamina']}. Your LUCK is {stats['luck']}.")
+    print("Type 'stats' during any normal prompt to see your stats.\n")
+    print("Press ENTER to begin your adventure!")
+    choose()
 
-# 1. CAVE - DAY
-print("""After some observation of the mountain from afar, you notice a small cave
+    # 1. CAVE - DAY
+    print("""After some observation of the mountain from afar, you notice a small cave
 entrance on its northern face. It's midday, but you don't see any guards from your
 vantage point. Would you like to:
--APPROACH the cave
--SEARCH for another entrance
--WAIT until nightfall""")
+    -APPROACH the cave
+    -SEARCH for another entrance
+    -WAIT until nightfall""")
 
-cave_response = choose()
+    cave_response = choose()
 
-cave(cave_response, stats)
+    cave(cave_response, stats)
+
+game_start()
