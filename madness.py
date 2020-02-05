@@ -3,8 +3,8 @@
 # Steve Eckles
 
 from textwrap import dedent
-import mountain_scenes as scenes
-import mountain_units as units
+import scenes
+import units
 
 class Engine(object):
     def __init__(self, game_map):
@@ -23,7 +23,9 @@ class Map(object):
         'ex_search': scenes.ExteriorSearch(),
         'ex_approach': scenes.ExteriorApproach(),
         'ex_wait': scenes.ExteriorWait(),
-        'first_fork': scenes.FirstFork()
+        'first_fork': scenes.FirstFork(),
+        'first_fork_left': scenes.FirstForkLeft(),
+        'first_fork_right': scenes.FirstForkRight()
     }
 
     def next_scene(self, scene_name):
@@ -46,7 +48,7 @@ class Map(object):
         print(f"Your SKILL is {player.stats['skill']}. Your STAMINA is {player.stats['stamina']}. Your LUCK is {player.stats['luck']}.")
         print("Type 'stats' during any normal prompt to see your stats.\n")
         print("Press ENTER to begin your adventure!")
-        scenes.choose()
+        scenes.Scene.choose(None)
         return scenes.MountainExterior()
 
 player = units.Player(input("What is your name, adventurer?\n> "))
