@@ -36,19 +36,22 @@ class Scene(object):
             You will roll 2d6. If the result is lower than your LUCK score, you are
             lucky and your LUCK will be reduced by 1. If your result is higher than
             your LUCK score, you are unlucky and must face the consequences.\n""")
-            return ''
+            return Scene.choose(Scene)
         elif choice == 'stats':
             print(f"Your SKILL is {player.stats['skill']}. Your STAMINA is {player.stats['stamina']}. Your LUCK is {player.stats['luck']}.\n")
-            return ''
+            return Scene.choose(Scene)
         elif choice == 'gold':
-            print(f"You are currently carrying {stats['gold']} gold.")
-            return ''
+            print(f"You are currently carrying {player.stats['gold']} gold.")
+            return Scene.choose(Scene)
         elif choice == 'items':
             if len(stats['items']) > 0:
-                print(f"Your inventory currently contains a {', '.join(stats['items'][:-1])}, and {stats['items'][-1]}")
+                print(f"Your inventory currently contains a {', '.join(player.stats['items'][:-1])}, and {player.stats['items'][-1]}")
+                return Scene.choose(Scene)
             else:
                 print(f"Your inventory is empty.")
-            return ''
+            return Scene.choose(Scene)
+        elif choice == 'quit':
+            raise SystemExit
         else:
             return choice
 
@@ -204,7 +207,7 @@ class FirstFork(Scene):
         """))
 
         fork_response = self.choose()
-        while fork_response == '' or not fork_response in ['left', 'right']:
+        while fork_response not in ['left', 'right']:
             print(self.repeat_input(['Take the path on the LEFT', 'Take the path on the RIGHT']))
             fork_response = self.choose()
 
@@ -278,7 +281,7 @@ class FirstForkRight(Scene):
         """))
 
         door_response = self.choose()
-        while door_response == '' or not door_response in ['ram', 'back']:
+        while door_response not in ['ram', 'back']:
             print(self.repeat_input(['RAM the door', 'Turn BACK']))
             door_response = self.choose()
 
