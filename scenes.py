@@ -1,10 +1,12 @@
+"""Contains the game scenes used by the engine in madness.py"""
+
 from random import randint
 from textwrap import dedent
 import units
 
 
 class Scene(object):
-    """Contains methods for use by child classes
+    """Contains methods for use by each of the other game Scenes.
 
     Methods:
         enter: prints a description of the scene and expected inputs to the user
@@ -45,6 +47,7 @@ class Scene(object):
             return Scene.choose(Scene, player)
         elif choice == 'items':
             if len(player.stats['items']) > 0:
+                # Slice the final item off and include it separately for grammatical reasons
                 print(f"Your inventory currently contains a {', '.join(player.stats['items'][:-1])}, and {player.stats['items'][-1]}")
                 return Scene.choose(Scene, player)
             else:
@@ -56,6 +59,7 @@ class Scene(object):
             return choice
 
     def repeat_input(self, args):
+        """Take a list of scene-specific options as strings and create one string"""
         result = ['Pick one:\n']
         for arg in args:
             result.append(f'\t-{arg}\n')
@@ -93,6 +97,7 @@ class Scene(object):
                     print("You have failed! Your adventure is over.")
                     input("Press ENTER to quit.\n> ")
                     raise SystemExit
+        # This method is all side-effects and doesn't need to return anything
         return
 
 class MountainExterior(Scene):
@@ -112,23 +117,30 @@ class MountainExterior(Scene):
         \t-SEARCH for another entrance
         \t-WAIT until nightfall
         """))
+
         exterior_choice = self.choose(player)
+
         while exterior_choice not in MountainExterior.choices:
             print(self.repeat_input(['APPROACH the cave', 'SEARCH for another entrance', 'WAIT until nightfall']))
             exterior_choice = self.choose(player)
+
         return MountainExterior.choices.get(exterior_choice)
 
 class ExteriorSearch(Scene):
+
     def enter(self, player):
         print(dedent("""
         You trace a wide, slow path through the local flora surrounding the mountain.
         After several hours of searching, you find yourself back where you started with
         nothing more accomplished than sore feet and dashed hopes. Night approaches...
         """))
+
         return 'ex_wait'
 
 class ExteriorApproach(Scene):
+
     def enter(self, player):
+
         print(dedent("""
         You stride boldly towards the cave. As you approach, two GOBLIN GUARDS
         emerge from the darkness. They are chittering in a language that you do not understand,
@@ -136,8 +148,10 @@ class ExteriorApproach(Scene):
         You must FIGHT!
         Press ENTER to begin the combat.
         """))
+
         self.choose(player)
         self.combat(units.Unit('GOBLIN GUARD', 5, 4), 2, player)
+
         print(dedent("""
         Victory over the GOBLIN GUARDS is yours! You take a moment to
         examine their belongings. Their arms and armor are crude and worthless, but you
@@ -145,9 +159,12 @@ class ExteriorApproach(Scene):
         that these lowly guards have to offer and head deeper into the cave.\n
         Press ENTER to continue.
         """))
+
         player.stats['gold'] += 1
         player.stats['items'].append('a copper key')
+
         self.choose(player)
+
         return 'first_fork'
 
 class ExteriorWait(Scene):

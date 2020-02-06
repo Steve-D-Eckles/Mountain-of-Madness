@@ -1,3 +1,5 @@
+"""Contains the unit template for enemies and the player"""
+
 from random import randint
 
 class Unit(object):

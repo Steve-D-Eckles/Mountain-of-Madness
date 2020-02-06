@@ -7,6 +7,8 @@ import scenes
 import units
 
 class Engine(object):
+    """Gets Scene objects from the Map and calls the enter methods to run the game."""
+
     def __init__(self, game_map):
         self.game_map = game_map
 
@@ -18,6 +20,7 @@ class Engine(object):
             current_scene = game_map.next_scene(next_scene)
 
 class Map(object):
+    """Use the return values from each Scene to instantiate new objects for the next scene."""
 
     scene_list = {
         'ex_search': scenes.ExteriorSearch(),
