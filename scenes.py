@@ -4,16 +4,25 @@ import units
 
 
 class Scene(object):
-    """Fallback Parent Scene"""
+    """Contains methods for use by child classes
+
+    Methods:
+        enter: prints a description of the scene and expected inputs to the user
+        choose: gets input from the user, checks for keywords, and produces
+                output or returns the keywords
+        repeat_input: constructs a list of available options for the current scene
+        combat: creates a combat scenario
+    """
 
     def enter(self, player):
         print("You shouldn't be here. Whoops!")
         raise SystemExit
 
     def choose(self):
-        """Get user input or output gameplay information upon request"""
+
         choice = input('> ')
         choice = choice.lower()
+
         if choice == 'help':
             print("Gameplay: Enter relevent commands when prompted to continue on your adventure.")
             print("Status: Enter 'stats' during any prompt to see your current stats.")
@@ -83,7 +92,6 @@ class Scene(object):
                     raise SystemExit
         return
 
-
 class MountainExterior(Scene):
 
     choices = {
@@ -112,7 +120,7 @@ class ExteriorSearch(Scene):
         print(dedent("""
         You trace a wide, slow path through the local flora surrounding the mountain.
         After several hours of searching, you find yourself back where you started with
-        nothing more accomplished than sore feet and dashed hopes. Night approaches...\n
+        nothing more accomplished than sore feet and dashed hopes. Night approaches...
         """))
         return 'ex_wait'
 
@@ -122,7 +130,8 @@ class ExteriorApproach(Scene):
         You stride boldly towards the cave. As you approach, two GOBLIN GUARDS
         emerge from the darkness. They are chittering in a language that you do not understand,
         but you have seen enough combat to understand the cruel gleam in their eyes.
-        You must FIGHT!\n\nPress ENTER to begin the combat.
+        You must FIGHT!
+        Press ENTER to begin the combat.
         """))
         self.choose()
         self.combat(units.Unit('GOBLIN GUARD', 5, 4), 2, player)
@@ -161,9 +170,9 @@ class ExteriorWait(Scene):
         if luck_test <= player.stats['luck']:
             player.stats['luck'] -= 1
             print(dedent(f"""
-            You are lucky. Your LUCK is reduced to {player.stats['luck']}. You
-            awaken in the early dawn hours with nothing worse to show for last night's misadventure
-            than a stiff back from sleeping on the cold ground.\n
+            You are lucky. Your LUCK is reduced to {player.stats['luck']}.
+            You awaken in the early dawn hours with nothing worse to show for last
+            night's misadventure than a stiff back from sleeping on the cold ground.
             You decide that you have no option other than to proceed into the mountain through
             the cave entrance that you saw yesterday. You cautiously approach the low, wide opening.
             As you draw closer to the threshold, you see crude wooden chairs around a small table
@@ -205,7 +214,58 @@ class FirstFork(Scene):
             return 'first_fork_right'
 
 class FirstForkLeft(Scene):
-    pass
+    def enter(self, player):
+        print(dedent("""
+            This passage widens as you continue along its length until it terminates
+            in a large room. You see several simple beds along the walls, each
+            with a simple wooden container at its foot. There is also a large
+            round table at the other end of the room, with one of its chairs currently
+            occupied by a large, snoring mass. On the other side of the table is an
+            iron door. There is also a wooden door directly across from you.
+            Would you like to:
+            \t-Attempt to exit the room through the WOODEN DOOR
+            \t-Attempt to exit the room through the IRON DOOR
+            \t-Search the FOOTLOCKERS
+            \t-Search the sleeping BUGBEAR
+        """))
+
+        barracks_response = self.choose()
+        if barracks_response == 'footlockers':
+            return 'footlockers'
+        else:
+            print("Thanks for playing the DEMO. Support me on patreon for the latest release.")
+            raise SystemExit
+
+class Footlockers(Scene):
+    def enter(self, player):
+        print(dedent("""
+        You quickly but quietly search through each of the footlockers. Each contains
+        simple clothing and other assorted personal items, but none appear to be of
+        any value; however, the final footlocker looks nicer than the others and
+        is the only one that appears to actually be locked. If you have a COPPER KEY,
+        you may OPEN the locker. Otherwise, pick one:
+        \t-Attempt to exit the room through the WOODEN DOOR
+        \t-Attempt to exit the room through the IRON DOOR
+        \t-Search the sleeping BUGBEAR
+        """))
+        footlocker_response = self.choose()
+        if footlocker_response == 'open':
+            if 'a copper key' in player.stats['items']:
+                print(dedent("""
+                You open the footlocker and find a Ring of Luck. You put it on your finger and gain
+                one LUCK.
+                """))
+                player.stats['items'].append('a Ring of Luck')
+                player.stats['luck'] += 1
+            else:
+                print("You don't have the key.")
+
+            print("Thanks for playing the DEMO. Support me on patreon for the latest release.")
+            raise SystemExit
+
+        else:
+            print("Thanks for playing the DEMO. Support me on patreon for the latest release.")
+            raise SystemExit
 
 class FirstForkRight(Scene):
     def enter(self, player):
@@ -221,3 +281,65 @@ class FirstForkRight(Scene):
         while door_response == '' or not door_response in ['ram', 'back']:
             print(self.repeat_input(['RAM the door', 'Turn BACK']))
             door_response = self.choose()
+
+        if door_response == 'ram':
+            return 'door_ram'
+        elif door_response == 'back':
+            print("You head back to where the path forked and proceed the other way.")
+            return 'first_fork_left'
+
+class DoorRam(Scene):
+    def enter(self, player):
+        print(dedent("""
+        You stretch out your shoulder and ready yourself to charge the unsuspecting
+        door. You must Test Your Luck. For each failure, you will take 2 points of
+        STAMINA damage. You may try as many times as you like, or you may turn BACK
+        at any time.
+        Press ENTER to TEST YOUR LUCK
+        """))
+
+        while True:
+            ram_response = self.choose()
+            if ram_response == 'back':
+                return 'first_fork_left'
+            luck_test = randint(1, 6) + randint(1, 6)
+            print(f"You rolled {luck_test}. Your LUCK is {player.stats['luck']}")
+            if luck_test > player.stats['luck']:
+                player.stats['stamina'] -= 2
+                if player.stats['stamina'] <= 0:
+                    print(dedent("""
+                    Bleeding but determined, you throw your broken body once more
+                    upon the unrelenting wooden door. You take a moment to reflect
+                    on how your end was brought about by an inanimate object, and
+                    you wonder what the sorcerer's minions will think when they
+                    find you here.
+                    Your vision fades to black. Your adventure is over.
+                    Press ENTER to exit.
+                    """))
+                    input('> ')
+                    raise SystemExit
+                else:
+                    print(dedent(f"""
+                    You are unlucky and fail to bust open the door. Your STAMINA is
+                    {player.stats['stamina']}. Try again or go BACK.
+                    """))
+                    continue
+            else:
+                player.stats['luck'] -= 1
+                return 'pit'
+
+class Pit(Scene):
+    def enter(self, player):
+        print(dedent(f"""
+        You are Lucky. Your LUCK is reduced by one and is now {player.stats['luck']}.
+        The rusted bolt on the other side of the door breaks free from the wall
+        with a resounding crack as you barrel at full force into the door. The door
+        flies open and you fall headlong into the room as your momentum carries you
+        forward; however, you quickly realize that the ground won't be able to break
+        your fall because there isn't any ground here at all! You are unable to
+        stop yourself from being impaled on the spikes at the bottom of the pit trap.
+        Your adventure is over.
+        Press ENTER to exit.
+        """))
+        input('> ')
+        raise SystemExit

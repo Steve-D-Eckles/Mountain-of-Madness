@@ -25,7 +25,10 @@ class Map(object):
         'ex_wait': scenes.ExteriorWait(),
         'first_fork': scenes.FirstFork(),
         'first_fork_left': scenes.FirstForkLeft(),
-        'first_fork_right': scenes.FirstForkRight()
+        'first_fork_right': scenes.FirstForkRight(),
+        'door_ram': scenes.DoorRam(),
+        'pit': scenes.Pit(),
+        'footlockers': scenes.Footlockers()
     }
 
     def next_scene(self, scene_name):
