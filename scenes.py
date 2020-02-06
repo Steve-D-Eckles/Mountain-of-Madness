@@ -18,7 +18,7 @@ class Scene(object):
         print("You shouldn't be here. Whoops!")
         raise SystemExit
 
-    def choose(self):
+    def choose(self, player):
 
         choice = input('> ')
         choice = choice.lower()
@@ -36,20 +36,20 @@ class Scene(object):
             You will roll 2d6. If the result is lower than your LUCK score, you are
             lucky and your LUCK will be reduced by 1. If your result is higher than
             your LUCK score, you are unlucky and must face the consequences.\n""")
-            return Scene.choose(Scene)
+            return Scene.choose(Scene, player)
         elif choice == 'stats':
             print(f"Your SKILL is {player.stats['skill']}. Your STAMINA is {player.stats['stamina']}. Your LUCK is {player.stats['luck']}.\n")
-            return Scene.choose(Scene)
+            return Scene.choose(Scene, player)
         elif choice == 'gold':
             print(f"You are currently carrying {player.stats['gold']} gold.")
-            return Scene.choose(Scene)
+            return Scene.choose(Scene, player)
         elif choice == 'items':
-            if len(stats['items']) > 0:
+            if len(player.stats['items']) > 0:
                 print(f"Your inventory currently contains a {', '.join(player.stats['items'][:-1])}, and {player.stats['items'][-1]}")
-                return Scene.choose(Scene)
+                return Scene.choose(Scene, player)
             else:
                 print(f"Your inventory is empty.")
-            return Scene.choose(Scene)
+            return Scene.choose(Scene, player)
         elif choice == 'quit':
             raise SystemExit
         else:
@@ -65,7 +65,7 @@ class Scene(object):
         """Handle combat encounters using Unit and Player objects from mountain_units"""
         for i in range(1, count + 1):
             print(f"{enemy.name} {i} prepares to fight!", end='')
-            self.choose()
+            self.choose(player)
             i_stamina = enemy.stats['stamina']
             while i_stamina > 0:
                 enemy_roll = randint(1, 6) + randint(1, 6) + enemy.stats['skill']
@@ -85,10 +85,10 @@ class Scene(object):
                 else:
                     print("Neither combatant could bypass the other's defense!", end='')
 
-                self.choose()
+                self.choose(player)
                 if i_stamina == 0:
                     print(f"{enemy.name} {i} has been slain!")
-                    self.choose()
+                    self.choose(player)
                 if player.stats['stamina'] == 0:
                     print("You have failed! Your adventure is over.")
                     input("Press ENTER to quit.\n> ")
@@ -112,10 +112,10 @@ class MountainExterior(Scene):
         \t-SEARCH for another entrance
         \t-WAIT until nightfall
         """))
-        exterior_choice = self.choose()
+        exterior_choice = self.choose(player)
         while exterior_choice not in MountainExterior.choices:
             print(self.repeat_input(['APPROACH the cave', 'SEARCH for another entrance', 'WAIT until nightfall']))
-            exterior_choice = self.choose()
+            exterior_choice = self.choose(player)
         return MountainExterior.choices.get(exterior_choice)
 
 class ExteriorSearch(Scene):
@@ -136,7 +136,7 @@ class ExteriorApproach(Scene):
         You must FIGHT!
         Press ENTER to begin the combat.
         """))
-        self.choose()
+        self.choose(player)
         self.combat(units.Unit('GOBLIN GUARD', 5, 4), 2, player)
         print(dedent("""
         Victory over the GOBLIN GUARDS is yours! You take a moment to
@@ -147,7 +147,7 @@ class ExteriorApproach(Scene):
         """))
         player.stats['gold'] += 1
         player.stats['items'].append('a copper key')
-        self.choose()
+        self.choose(player)
         return 'first_fork'
 
 class ExteriorWait(Scene):
@@ -166,7 +166,7 @@ class ExteriorWait(Scene):
         Press ENTER to TEST YOUR LUCK.
         """))
 
-        self.choose()
+        self.choose(player)
         luck_test = randint(2, 12)
         print(f"You rolled {luck_test}. Your LUCK is {player.stats['luck']}")
 
@@ -184,7 +184,7 @@ class ExteriorWait(Scene):
             deeper into the cave.\n
             Press ENTER to ready yourself and proceed...
             """))
-            self.choose()
+            self.choose(player)
             return 'first_fork'
 
         else:
@@ -206,10 +206,10 @@ class FirstFork(Scene):
         \t-Take the path on the RIGHT
         """))
 
-        fork_response = self.choose()
+        fork_response = self.choose(player)
         while fork_response not in ['left', 'right']:
             print(self.repeat_input(['Take the path on the LEFT', 'Take the path on the RIGHT']))
-            fork_response = self.choose()
+            fork_response = self.choose(player)
 
         if fork_response == 'left':
             return 'first_fork_left'
@@ -232,7 +232,7 @@ class FirstForkLeft(Scene):
             \t-Search the sleeping BUGBEAR
         """))
 
-        barracks_response = self.choose()
+        barracks_response = self.choose(player)
         if barracks_response == 'footlockers':
             return 'footlockers'
         else:
@@ -251,7 +251,7 @@ class Footlockers(Scene):
         \t-Attempt to exit the room through the IRON DOOR
         \t-Search the sleeping BUGBEAR
         """))
-        footlocker_response = self.choose()
+        footlocker_response = self.choose(player)
         if footlocker_response == 'open':
             if 'a copper key' in player.stats['items']:
                 print(dedent("""
@@ -280,10 +280,10 @@ class FirstForkRight(Scene):
         \t-Turn BACK
         """))
 
-        door_response = self.choose()
+        door_response = self.choose(player)
         while door_response not in ['ram', 'back']:
             print(self.repeat_input(['RAM the door', 'Turn BACK']))
-            door_response = self.choose()
+            door_response = self.choose(player)
 
         if door_response == 'ram':
             return 'door_ram'
@@ -302,7 +302,7 @@ class DoorRam(Scene):
         """))
 
         while True:
-            ram_response = self.choose()
+            ram_response = self.choose(player)
             if ram_response == 'back':
                 return 'first_fork_left'
             luck_test = randint(1, 6) + randint(1, 6)

@@ -51,7 +51,7 @@ class Map(object):
         print(f"Your SKILL is {player.stats['skill']}. Your STAMINA is {player.stats['stamina']}. Your LUCK is {player.stats['luck']}.")
         print("Type 'stats' during any normal prompt to see your stats.\n")
         print("Press ENTER to begin your adventure!")
-        scenes.Scene.choose(None)
+        scenes.Scene.choose(None, player)
         return scenes.MountainExterior()
 
 player = units.Player(input("What is your name, adventurer?\n> "))
